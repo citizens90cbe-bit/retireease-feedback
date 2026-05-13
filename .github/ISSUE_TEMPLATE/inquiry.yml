@@ -1,0 +1,46 @@
+name: "❓ Inquiry / Question"
+description: Ask a question about how something works
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have a question about RetireEase? Ask away — no question is too basic.
+
+  - type: input
+    id: summary
+    attributes:
+      label: What's your question?
+      description: A short summary.
+      placeholder: "e.g. How does the withdrawal strategy affect my tax projection?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: More detail (optional)
+      description: Share any context that helps us give a better answer.
+      placeholder: |
+        I'm using System-Optimized withdrawal with a mix of traditional and Roth accounts.
+        The tax line jumps significantly around age 73 — is that the RMD kicking in?
+    validations:
+      required: false
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Which feature are you asking about?
+      options:
+        - Projections / Math
+        - Withdrawal strategies
+        - Tax modeling
+        - Healthcare / IRMAA
+        - Social Security optimizer
+        - Roth conversion optimizer
+        - Contributions
+        - Import / Export
+        - Account / Sign-in
+        - Other
+    validations:
+      required: false
