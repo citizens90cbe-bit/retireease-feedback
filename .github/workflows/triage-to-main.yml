@@ -1,0 +1,59 @@
+name: Triage accepted issue to main repo
+
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  copy-issue:
+    # Only fires when the "accepted" label is applied
+    if: github.event.label.name == 'accepted'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Copy issue to retireease
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.RETIREEASE_PAT }}
+          script: |
+            const src   = context.payload.issue;
+            const actor = context.payload.sender.login;
+
+            // Build body with backlink to public issue
+            const body = [
+              `> Triaged from public feedback: ${src.html_url}`,
+              `> Reporter: @${src.user.login}`,
+              '',
+              src.body ?? '_(no description)_',
+            ].join('\n');
+
+            // Map public labels to internal ones (drop "accepted", keep the rest)
+            const labels = src.labels
+              .map(l => l.name)
+              .filter(n => n !== 'accepted');
+
+            const created = await github.rest.issues.create({
+              owner: 'citizens90cbe-bit',
+              repo:  'retireease',
+              title: `[Feedback] ${src.title}`,
+              body,
+              labels,          // only works if labels already exist in retireease
+            });
+
+            // Comment on the public issue so the reporter knows it was accepted
+            await github.rest.issues.createComment({
+              owner:      'citizens90cbe-bit',
+              repo:       'retireease-feedback',
+              issue_number: src.number,
+              body: `✅ Accepted and tracked internally. Thank you for the report!`,
+            });
+
+            // Close the public issue
+            await github.rest.issues.update({
+              owner:        'citizens90cbe-bit',
+              repo:         'retireease-feedback',
+              issue_number: src.number,
+              state:        'closed',
+            });
+
+            console.log(`Created retireease#${created.data.number}`);
