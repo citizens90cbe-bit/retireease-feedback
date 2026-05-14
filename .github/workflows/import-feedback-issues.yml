@@ -1,0 +1,42 @@
+name: Import Feedback Issues
+
+on:
+  issues:
+    types: [labeled]
+  workflow_dispatch:  # Allows manual trigger from Actions tab
+
+jobs:
+  import-issue:
+    if: github.event.label.name == 'ready-to-import' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Import issue to retireease
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const feedbackRepo = context.repo;
+            
+            // Create the issue in the main retireease repo
+            const newIssue = await github.rest.issues.create({
+              owner: 'citizens90cbe-bit',
+              repo: 'retireease',
+              title: `[FEEDBACK] ${issue.title}`,
+              body: `**Original Issue:** #${issue.number} from retireease-feedback\n\n${issue.body}\n\n---\n**Feedback Details:**\n- Author: @${issue.user.login}\n- Created: ${issue.created_at}\n- Source: [${feedbackRepo.owner}/${feedbackRepo.repo}#${issue.number}](https://github.com/${feedbackRepo.owner}/${feedbackRepo.repo}/issues/${issue.number})`,
+              labels: ['imported-feedback', ...issue.labels.map(l => l.name)],
+              assignees: issue.assignees.map(a => a.login)
+            });
+            
+            console.log(`Created issue #${newIssue.data.number} in retireease`);
+            
+            // Add comment to original feedback issue with link
+            await github.rest.issues.createComment({
+              owner: feedbackRepo.owner,
+              repo: feedbackRepo.repo,
+              issue_number: issue.number,
+              body: `✅ This has been imported to the main repository for prioritization: [citizens90cbe-bit/retireease#${newIssue.data.number}](https://github.com/citizens90cbe-bit/retireease/issues/${newIssue.data.number})`
+            });
+
+permissions:
+  issues: write
+  contents: read
