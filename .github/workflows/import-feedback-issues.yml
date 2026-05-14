@@ -3,7 +3,7 @@ name: Import Feedback Issues
 on:
   issues:
     types: [labeled]
-  workflow_dispatch:  # Allows manual trigger from Actions tab
+  workflow_dispatch:
 
 jobs:
   import-issue:
@@ -13,7 +13,7 @@ jobs:
       - name: Import issue to retireease
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.RETIREEASE_TOKEN_CROSS_REPO }}
+          github-token: ${{ secrets.RETIREEASE_CROSS_REPO_TOKEN }}
           script: |
             const issue = context.payload.issue;
             const feedbackRepo = context.repo;
@@ -23,7 +23,7 @@ jobs:
               owner: 'citizens90cbe-bit',
               repo: 'retireease',
               title: `[FEEDBACK] ${issue.title}`,
-              body: `**Original Issue:** #${issue.number} from retireease-feedback\n\n${issue.body}\n\n---\n**Feedback Details:**\n- Author: @${issue.user.login}\n- Created: ${issue.created_at}\n- Source: [${feedbackRepo.owner}/${feedbackRepo.repo}#${issue.number}](https://github.com/${feedbackRepo.owner}/${feedbackRepo.repo}/issues/${issue.number})`,
+              body: `**Original Issue:** #${issue.number} from retireease-feedback\n\n${issue.body}\n\n---\n**Feedback Details:**\n- Author: @${issue.user.login}\n- Created: ${issue.created_at}`,
               labels: ['imported-feedback', ...issue.labels.map(l => l.name)],
               assignees: issue.assignees.map(a => a.login)
             });
