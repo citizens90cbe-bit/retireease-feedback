@@ -13,7 +13,7 @@ jobs:
       - name: Import issue to retireease
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.RETIREEASE_CROSS_REPO_TOKEN }}
+          github-token: ${{ secrets.CROSS_REPO_TOKEN }}
           script: |
             const issue = context.payload.issue;
             const feedbackRepo = context.repo;
